@@ -9,18 +9,21 @@ const Content = () => {
   const [curDice, setCurDice] = useState(1);
   const [currentScore, setCurrentScore] = useState(0);
   const [activePlayer, setActivePlayer] = useState(0);
-
+  const [scores, setScores] = useState([0, 0]);
+  const [isWinner, setIsWinner] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const diceImg = require(`../../assets/images/dice-${curDice}.png`).default;
 
   const rollDiceHandler = () => {
-    const dice = Math.trunc(Math.random() * 6) + 1;
-    setShowDice(true);
-    if (dice !== 1) {
-      console.log(dice);
-      setCurDice(dice);
-      setCurrentScore((prevState) => (prevState += dice));
-    } else {
-      switchHandler();
+    if (isPlaying) {
+      const dice = Math.trunc(Math.random() * 6) + 1;
+      setShowDice(true);
+      if (dice !== 1) {
+        setCurDice(dice);
+        setCurrentScore((prevState) => (prevState += dice));
+      } else {
+        switchHandler();
+      }
     }
   };
 
@@ -29,17 +32,50 @@ const Content = () => {
     setActivePlayer((prevState) => (prevState === 0 ? 1 : 0));
   };
 
+  const holdHandler = () => {
+    if (isPlaying) {
+      scores[activePlayer] += currentScore;
+      if (scores[activePlayer] >= 10) {
+        setIsWinner(true);
+        setShowDice(false);
+        setIsPlaying(false);
+      } else {
+        switchHandler();
+      }
+    }
+  };
+
+  const newGameHandler = () => {
+    setShowDice(false);
+    setCurDice(1);
+    setCurrentScore(0);
+    setActivePlayer(0);
+    setScores([0, 0]);
+    setIsWinner(false);
+    setIsPlaying(true);
+  };
+
   return (
     <div className={styles.content}>
       {activePlayer === 0 ? (
-        <Player1 score={currentScore} />
+        <Player1
+          active={true}
+          score={currentScore}
+          totalScore={scores[0]}
+          winner={isWinner}
+        />
       ) : (
-        <Player1 score={0} />
+        <Player1 score={0} totalScore={scores[0]} />
       )}
       {activePlayer === 1 ? (
-        <Player2 score={currentScore} />
+        <Player2
+          active={true}
+          score={currentScore}
+          totalScore={scores[1]}
+          winner={isWinner}
+        />
       ) : (
-        <Player2 score={0} />
+        <Player2 score={0} totalScore={scores[1]} />
       )}
 
       <img
@@ -48,7 +84,12 @@ const Content = () => {
         className={styles.dice}
         style={{ visibility: showDice ? "visible" : "hidden" }}
       />
-      <button className={`${styles.btn} ${styles.btnNew}`}>New game</button>
+      <button
+        className={`${styles.btn} ${styles.btnNew}`}
+        onClick={newGameHandler}
+      >
+        New game
+      </button>
       <button
         className={`${styles.btn} ${styles.btnRoll}`}
         onClick={rollDiceHandler}
@@ -57,7 +98,7 @@ const Content = () => {
       </button>
       <button
         className={`${styles.btn} ${styles.btnHold}`}
-        onClick={switchHandler}
+        onClick={holdHandler}
       >
         Hold
       </button>
