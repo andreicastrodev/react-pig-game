@@ -1,24 +1,63 @@
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import Button from "../Button/Button";
 import styles from "./Content.module.css";
 import Players from "../Players/Players";
+import INITIAL_STATE from "./config";
 const Content = () => {
-  const [showDice, setShowDice] = useState(false);
-  const [curDice, setCurDice] = useState(1);
-  const [currentScore, setCurrentScore] = useState(0);
-  const [activePlayer, setActivePlayer] = useState(0);
+  const gameReducer = (state, action) => {
+    switch (action.type) {
+      case "ROLL":
+        console.log(action.dice);
+        return {
+          ...state,
+          curDice: action.dice,
+          currentScore: (state.currentScore += action.dice),
+        };
+
+      case "SWITCH":
+        return {
+          ...state,
+          currentScore: 0,
+          activePlayer: state.activePlayer === 0 ? 1 : 0,
+        };
+      case "SHOW":
+        return {
+          ...state,
+          showDice: true,
+        };
+      case "WINNER":
+        return {
+          ...state,
+          isWinner: true,
+          showDice: false,
+          isPlaying: false,
+        };
+      case "NEW":
+        return {
+          ...INITIAL_STATE,
+        };
+      default:
+        break;
+    }
+  };
+
+  const [state, dispatch] = useReducer(gameReducer, INITIAL_STATE);
   const [scores, setScores] = useState([0, 0]);
-  const [isWinner, setIsWinner] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
+
+  const { showDice, curDice, currentScore, activePlayer, isWinner, isPlaying } =
+    state;
+
   const diceImg = require(`../../assets/images/dice-${curDice}.png`).default;
 
   const rollDiceHandler = () => {
+    console.log(state);
+
     if (isPlaying) {
       const dice = Math.trunc(Math.random() * 6) + 1;
-      setShowDice(true);
+      dispatch({ type: "SHOW" });
       if (dice !== 1) {
-        setCurDice(dice);
-        setCurrentScore((prevState) => (prevState += dice));
+        console.log(state.curDice);
+        dispatch({ type: "ROLL", dice: dice });
       } else {
         switchHandler();
       }
@@ -26,17 +65,14 @@ const Content = () => {
   };
 
   const switchHandler = () => {
-    setCurrentScore(0);
-    setActivePlayer((prevState) => (prevState === 0 ? 1 : 0));
+    dispatch({ type: "SWITCH" });
   };
 
   const holdHandler = () => {
     if (isPlaying) {
       scores[activePlayer] += currentScore;
-      if (scores[activePlayer] >= 10) {
-        setIsWinner(true);
-        setShowDice(false);
-        setIsPlaying(false);
+      if (scores[activePlayer] >= 5) {
+        dispatch({ type: "WINNER" });
       } else {
         switchHandler();
       }
@@ -44,13 +80,8 @@ const Content = () => {
   };
 
   const newGameHandler = () => {
-    setShowDice(false);
-    setCurDice(1);
-    setCurrentScore(0);
-    setActivePlayer(0);
+    dispatch({ type: "NEW" });
     setScores([0, 0]);
-    setIsWinner(false);
-    setIsPlaying(true);
   };
 
   return (
