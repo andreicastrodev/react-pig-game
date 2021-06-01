@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import Player1 from "../Players/Player-1";
-import Player2 from "../Players/Player-2";
-
+import Button from "../Button/Button";
 import styles from "./Content.module.css";
-
+import Players from "../Players/Players";
 const Content = () => {
   const [showDice, setShowDice] = useState(false);
   const [curDice, setCurDice] = useState(1);
@@ -57,26 +55,12 @@ const Content = () => {
 
   return (
     <div className={styles.content}>
-      {activePlayer === 0 ? (
-        <Player1
-          active={true}
-          score={currentScore}
-          totalScore={scores[0]}
-          winner={isWinner}
-        />
-      ) : (
-        <Player1 score={0} totalScore={scores[0]} />
-      )}
-      {activePlayer === 1 ? (
-        <Player2
-          active={true}
-          score={currentScore}
-          totalScore={scores[1]}
-          winner={isWinner}
-        />
-      ) : (
-        <Player2 score={0} totalScore={scores[1]} />
-      )}
+      <Players
+        activePlayer={activePlayer}
+        currentScore={currentScore}
+        scores={scores}
+        winner={isWinner}
+      />
 
       <img
         src={diceImg}
@@ -84,24 +68,14 @@ const Content = () => {
         className={styles.dice}
         style={{ visibility: showDice ? "visible" : "hidden" }}
       />
-      <button
-        className={`${styles.btn} ${styles.btnNew}`}
-        onClick={newGameHandler}
-      >
-        New game
-      </button>
-      <button
-        className={`${styles.btn} ${styles.btnRoll}`}
-        onClick={rollDiceHandler}
-      >
-        Roll dice
-      </button>
-      <button
-        className={`${styles.btn} ${styles.btnHold}`}
-        onClick={holdHandler}
-      >
-        Hold
-      </button>
+
+      <Button
+        name={`New Game`}
+        onClickHandler={newGameHandler}
+        type={`new game`}
+      />
+      <Button name={`Roll`} onClickHandler={rollDiceHandler} type={`roll`} />
+      <Button name={`Hold`} onClickHandler={holdHandler} type={`hold`} />
     </div>
   );
 };
